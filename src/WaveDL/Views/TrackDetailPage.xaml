@@ -10,6 +10,11 @@
 
     <ScrollViewer Padding="{StaticResource WavePagePadding}" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="22" MaxWidth="900">
+            <StackPanel.ChildrenTransitions>
+                <TransitionCollection>
+                    <EntranceThemeTransition FromVerticalOffset="22" />
+                </TransitionCollection>
+            </StackPanel.ChildrenTransitions>
 
             <Button Command="{Binding GoBackCommand}" Background="Transparent" BorderThickness="0" Padding="4">
                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -26,7 +31,8 @@
 
                 <Border Grid.Column="0" Width="220" Height="220" CornerRadius="16"
                         Background="{ThemeResource WaveSurfaceAltBrush}">
-                    <Image Source="{Binding Track.BestThumbnailUrl, Converter={StaticResource ImageConverter}}"
+                    <Image x:Name="DetailCover"
+                           Source="{Binding Track.BestThumbnailUrl, Converter={StaticResource ImageConverter}}"
                            Stretch="UniformToFill" />
                 </Border>
 

@@ -13,6 +13,11 @@
 
     <ScrollViewer Padding="{StaticResource WavePagePadding}" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="18" MaxWidth="920">
+            <StackPanel.ChildrenTransitions>
+                <TransitionCollection>
+                    <EntranceThemeTransition FromVerticalOffset="22" />
+                </TransitionCollection>
+            </StackPanel.ChildrenTransitions>
 
             <TextBlock Text="Depuis un lien" Style="{StaticResource WavePageTitleStyle}" />
             <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource WaveTextSecondaryBrush}"

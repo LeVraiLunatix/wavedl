@@ -9,6 +9,11 @@
 
     <ScrollViewer Padding="{StaticResource WavePagePadding}" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="16" MaxWidth="760">
+            <StackPanel.ChildrenTransitions>
+                <TransitionCollection>
+                    <EntranceThemeTransition FromVerticalOffset="22" />
+                </TransitionCollection>
+            </StackPanel.ChildrenTransitions>
 
             <TextBlock Text="Paramètres" Style="{StaticResource WavePageTitleStyle}" />
 

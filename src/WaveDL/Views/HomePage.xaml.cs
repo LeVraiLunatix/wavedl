@@ -19,7 +19,32 @@ public sealed partial class HomePage : Page
     protected override async void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
+        StartAmbientMotion();
         await ViewModel.LoadRecentAsync();
+    }
+
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        base.OnNavigatedFrom(e);
+        AuroraStoryboard.Stop();
+    }
+
+    private void StartAmbientMotion()
+    {
+        var animate = true;
+        try
+        {
+            animate = new Windows.UI.ViewManagement.UISettings().AnimationsEnabled;
+        }
+        catch
+        {
+            // UISettings can be unavailable in some hosts — default to animating.
+        }
+
+        if (animate)
+        {
+            AuroraStoryboard.Begin();
+        }
     }
 
     private void OnQuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)

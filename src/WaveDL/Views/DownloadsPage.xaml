@@ -9,6 +9,11 @@
     mc:Ignorable="d">
 
     <Grid Padding="{StaticResource WavePagePadding}" RowSpacing="16">
+        <Grid.ChildrenTransitions>
+            <TransitionCollection>
+                <EntranceThemeTransition FromVerticalOffset="22" />
+            </TransitionCollection>
+        </Grid.ChildrenTransitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -36,6 +41,8 @@
             <ListView.ItemContainerTransitions>
                 <TransitionCollection>
                     <AddDeleteThemeTransition />
+                    <ReorderThemeTransition />
+                    <ContentThemeTransition />
                 </TransitionCollection>
             </ListView.ItemContainerTransitions>
             <ListView.ItemContainerStyle>

@@ -37,9 +37,20 @@ public sealed partial class SearchPage : Page
 
     private void OnResultClick(object sender, ItemClickEventArgs e)
     {
-        if (e.ClickedItem is Track track)
+        if (e.ClickedItem is not Track track)
         {
-            ViewModel.OpenTrackCommand.Execute(track);
+            return;
         }
+
+        try
+        {
+            ResultsList.PrepareConnectedAnimation("trackCover", track, "CoverImage");
+        }
+        catch
+        {
+            // Connected animation is a nicety, never a requirement.
+        }
+
+        ViewModel.OpenTrackCommand.Execute(track);
     }
 }
