@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build (e.g. 1.0.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $v = "${{ github.event.inputs.version }}"
+          } else {
+            $v = "${{ github.ref_name }}".TrimStart("v")
+          }
+          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "tag=v$v"    | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Building WaveDL $v"
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore
+        run: dotnet restore src/WaveDL/WaveDL.csproj
+
+      - name: Publish (win-x64)
+        run: >
+          dotnet publish src/WaveDL/WaveDL.csproj
+          -c Release -r win-x64 --self-contained
+          -p:Version=${{ steps.ver.outputs.version }}
+          -p:WindowsPackageType=None
+          -p:WindowsAppSDKSelfContained=true
+          -p:PublishReadyToRun=true
+          -o publish/win-x64
+
+      - name: Publish (win-arm64)
+        run: >
+          dotnet publish src/WaveDL/WaveDL.csproj
+          -c Release -r win-arm64 --self-contained
+          -p:Version=${{ steps.ver.outputs.version }}
+          -p:WindowsPackageType=None
+          -p:WindowsAppSDKSelfContained=true
+          -o publish/win-arm64
+
+      - name: Portable archives
+        shell: pwsh
+        run: |
+          $v = "${{ steps.ver.outputs.version }}"
+          Compress-Archive -Path publish/win-x64/*   -DestinationPath "WaveDL-$v-win-x64-portable.zip"
+          Compress-Archive -Path publish/win-arm64/* -DestinationPath "WaveDL-$v-win-arm64-portable.zip"
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        run: >
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          /DMyAppVersion=${{ steps.ver.outputs.version }}
+          /DPublishDir=..\publish\win-x64
+          installer\WaveDL.iss
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $v   = "${{ steps.ver.outputs.version }}"
+          $tag = "${{ steps.ver.outputs.tag }}"
+          gh release create $tag `
+            "installer/Output/WaveDL-Setup-$v.exe" `
+            "WaveDL-$v-win-x64-portable.zip" `
+            "WaveDL-$v-win-arm64-portable.zip" `
+            --title "WaveDL $v" `
+            --generate-notes `
+            --draft

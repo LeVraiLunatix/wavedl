@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="WaveDL.Views.HistoryPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:WaveDL.Models"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Padding="{StaticResource WavePagePadding}" RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Historique" Style="{StaticResource WavePageTitleStyle}" />
+            <Button Grid.Column="1" VerticalAlignment="Center" Content="Tout effacer" Click="OnClearAllClick"
+                    Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}" />
+        </Grid>
+
+        <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10"
+                    Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}">
+            <FontIcon Glyph="&#xE81C;" FontSize="34" Foreground="{ThemeResource WaveTextSecondaryBrush}" />
+            <TextBlock Text="Aucun téléchargement enregistré." Foreground="{ThemeResource WaveTextSecondaryBrush}" />
+        </StackPanel>
+
+        <ListView Grid.Row="1" ItemsSource="{Binding Entries}" SelectionMode="None"
+                  Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}, ConverterParameter=Invert}">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0,0,0,10" />
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="models:HistoryEntry">
+                    <Border Style="{StaticResource WaveCardStyle}" Padding="14">
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="56" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Width="56" Height="56" CornerRadius="9"
+                                    Background="{ThemeResource WaveSurfaceAltBrush}">
+                                <Image Source="{Binding ThumbnailUrl, Converter={StaticResource ImageConverter}}" Stretch="UniformToFill" />
+                            </Border>
+
+                            <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding Artist}" Style="{StaticResource WaveCaptionStyle}"
+                                           Visibility="{Binding Artist, Converter={StaticResource HasValueToVisibility}}" />
+                                <StackPanel Orientation="Horizontal" Spacing="14">
+                                    <TextBlock Text="{Binding DateText}" Style="{StaticResource WaveCaptionStyle}" />
+                                    <TextBlock Text="{Binding QualityText}" Style="{StaticResource WaveCaptionStyle}" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding FilePath}" Style="{StaticResource WaveCaptionStyle}" TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <Button Width="40" Height="40" Padding="0" ToolTipService.ToolTip="Ouvrir le dossier"
+                                        Click="OnOpenFolderClick" Tag="{Binding}">
+                                    <FontIcon Glyph="&#xE838;" FontSize="14" />
+                                </Button>
+                                <Button Width="40" Height="40" Padding="0" ToolTipService.ToolTip="Supprimer de l'historique"
+                                        Click="OnDeleteClick" Tag="{Binding}">
+                                    <FontIcon Glyph="&#xE74D;" FontSize="14" />
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</Page>

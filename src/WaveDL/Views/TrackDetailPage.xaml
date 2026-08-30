@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="WaveDL.Views.TrackDetailPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:models="using:WaveDL.Models"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer Padding="{StaticResource WavePagePadding}" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="22" MaxWidth="900">
+
+            <Button Command="{Binding GoBackCommand}" Background="Transparent" BorderThickness="0" Padding="4">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <FontIcon Glyph="&#xE72B;" FontSize="14" />
+                    <TextBlock Text="Retour" />
+                </StackPanel>
+            </Button>
+
+            <Grid ColumnSpacing="24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Width="220" Height="220" CornerRadius="16"
+                        Background="{ThemeResource WaveSurfaceAltBrush}">
+                    <Image Source="{Binding Track.BestThumbnailUrl, Converter={StaticResource ImageConverter}}"
+                           Stretch="UniformToFill" />
+                </Border>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="10">
+                    <TextBlock Text="{Binding Track.Title}" Style="{StaticResource WavePageTitleStyle}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding Track.Artist}" FontSize="16" Foreground="{ThemeResource WaveTextSecondaryBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <TextBlock Text="{Binding Track.DurationText}" Style="{StaticResource WaveCaptionStyle}" />
+                        <TextBlock Text="{Binding Track.Provider}" Style="{StaticResource WaveCaptionStyle}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding BestQualityText}" Style="{StaticResource WaveCaptionStyle}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+
+            <Border Style="{StaticResource WaveCardStyle}">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="Télécharger" Style="{StaticResource WaveSectionHeaderStyle}" Margin="0" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <ComboBox
+                            MinWidth="220"
+                            Header="Format"
+                            ItemsSource="{Binding Formats}"
+                            DisplayMemberPath="Label"
+                            SelectedItem="{Binding SelectedFormat, Mode=TwoWay}" />
+                        <Button
+                            Style="{StaticResource WaveAccentButtonStyle}"
+                            VerticalAlignment="Bottom"
+                            Command="{Binding DownloadCommand}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE896;" FontSize="15" />
+                                <TextBlock Text="Télécharger" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <TextBlock Text="La meilleure source audio disponible est toujours utilisée puis convertie dans le format choisi."
+                               Style="{StaticResource WaveCaptionStyle}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource WaveCardStyle}"
+                    Visibility="{Binding StreamsLoaded, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Qualités disponibles à la source" Style="{StaticResource WaveSectionHeaderStyle}" Margin="0" />
+                    <ItemsControl ItemsSource="{Binding Streams}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="models:AudioStreamInfo">
+                                <Grid Padding="0,6" ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{Binding DisplayName}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Extension}" Style="{StaticResource WaveCaptionStyle}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <ProgressRing IsActive="{Binding IsBusy}" Width="28" Height="28" HorizontalAlignment="Center" />
+            <InfoBar IsOpen="{Binding HasError}" Severity="Error" IsClosable="False" Message="{Binding ErrorMessage}" />
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

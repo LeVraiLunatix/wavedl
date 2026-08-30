@@ -1,0 +1,18 @@
+<Project>
+
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Version>1.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <Product>WaveDL</Product>
+    <Company>Lunatix</Company>
+    <Authors>Lunatix</Authors>
+    <NeutralLanguage>fr-FR</NeutralLanguage>
+    <Copyright>© Lunatix</Copyright>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>
