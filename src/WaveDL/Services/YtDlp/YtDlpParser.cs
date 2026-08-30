@@ -11,17 +11,26 @@ internal static class YtDlpParser
         var id = GetString(info, "id") ?? string.Empty;
         var title = FirstNonEmpty(GetString(info, "track"), GetString(info, "title")) ?? "Titre inconnu";
         var artist = FirstNonEmpty(
+                         FirstArrayItem(info, "artists"),
                          GetString(info, "artist"),
                          GetString(info, "creator"),
+                         FirstArrayItem(info, "uploaders"),
                          GetString(info, "uploader"),
-                         GetString(info, "channel"))
-                     ?? "Artiste inconnu";
+                         GetString(info, "channel"));
+
+        // Fiches de recherche allégées : reconstruire « Artiste — Titre » depuis le titre.
+        title = title.Trim();
+        if (string.IsNullOrWhiteSpace(artist) && TrySplitArtistTitle(title, out var splitArtist, out var splitTitle))
+        {
+            artist = splitArtist;
+            title = splitTitle;
+        }
 
         return new Track
         {
             Id = id,
-            Title = title.Trim(),
-            Artist = CleanArtist(artist),
+            Title = title,
+            Artist = CleanArtist(artist ?? "Artiste inconnu"),
             Album = GetString(info, "album"),
             Duration = TimeSpan.FromSeconds(Math.Max(0, GetDouble(info, "duration") ?? 0)),
             ThumbnailUrl = FirstNonEmpty(GetString(info, "thumbnail"), BestThumbnail(info)),
@@ -143,6 +152,73 @@ internal static class YtDlpParser
 
     private static string? FirstNonEmpty(params string?[] values) =>
         values.FirstOrDefault(v => !string.IsNullOrWhiteSpace(v));
+
+    private static string? FirstArrayItem(JsonElement info, string property)
+    {
+        if (!info.TryGetProperty(property, out var array) || array.ValueKind != JsonValueKind.Array)
+        {
+            return null;
+        }
+
+        foreach (var item in array.EnumerateArray())
+        {
+            if (item.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(item.GetString()))
+            {
+                return item.GetString();
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Best-effort "Artiste - Titre" split, used only when no artist field is available.</summary>
+    private static bool TrySplitArtistTitle(string source, out string artist, out string title)
+    {
+        artist = string.Empty;
+        title = source;
+
+        foreach (var separator in new[] { " - ", " – ", " — ", " | " })
+        {
+            var index = source.IndexOf(separator, StringComparison.Ordinal);
+            if (index <= 0)
+            {
+                continue;
+            }
+
+            var left = source[..index].Trim();
+            var right = StripNoiseSuffix(source[(index + separator.Length)..].Trim());
+
+            if (left.Length is >= 1 and <= 45 && right.Length >= 1 && !left.Contains("://", StringComparison.Ordinal))
+            {
+                artist = left;
+                title = right;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static string StripNoiseSuffix(string value)
+    {
+        string[] markers =
+        [
+            "(clip officiel", "(official video", "(official music video", "(official audio",
+            "(audio", "(lyric", "(parole", "(visualizer", "[official", "(prod", "(clip)",
+        ];
+
+        var lower = value.ToLowerInvariant();
+        foreach (var marker in markers)
+        {
+            var index = lower.IndexOf(marker, StringComparison.Ordinal);
+            if (index > 0)
+            {
+                return value[..index].Trim().TrimEnd('-', '|', '–', '—').Trim();
+            }
+        }
+
+        return value;
+    }
 
     private static string? GetString(JsonElement element, string property) =>
         element.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.String
